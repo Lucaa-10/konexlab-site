@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Outfit', sans-serif;
+    --font-display: 'Syne', sans-serif;
+    --color-midnight: #0B1121;
+    /* Deep rich blue */
+    --color-midnight-light: #151e32;
+    --color-cream: #F1EAD6;
+    /* Vintage Cream */
+    /* Midnight & Cream Theme */
+    --color-midnight: #0B1121;
+    --color-cream-dim: #D4CDB6;
+
+    /* Shadow & Marigold Palette */
+    --color-shadow-slate: #2C343D;
+    --color-marigold-orange: #E0A32B;
+    --color-zinc-white: #F2F3F4;
+    --color-taupe-gray: #8B8589;
+    --color-midnight-black: #000000;
+
+    /* Semantic Mapping */
+    --color-bg-main: var(--color-shadow-slate);
+    --color-bg-card: var(--color-shadow-slate);
+    --color-text-main: var(--color-zinc-white);
+    --color-text-muted: var(--color-taupe-gray);
+    --color-accent-primary: var(--color-marigold-orange);
+    --color-accent-secondary: var(--color-taupe-gray);
+
+    --color-brand-deep: var(--color-shadow-slate);
+    --color-brand-accent: var(--color-marigold-orange);
+}
+
+/* Dynamic Background Animation */
+@keyframes flow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.dynamic-bg {
+    background: linear-gradient(-45deg, #2C343D, #1A2026, #2C343D, #000000);
+    background-size: 400% 400%;
+    animation: flow 15s ease infinite;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-shadow-slate);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-marigold-orange);
+    border-radius: 4px;
+    opacity: 0.8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #C08A20;
+}
+
+/* 3D Text Effect - Industrial Style */
+.text-3d {
+    color: var(--color-zinc-white);
+    text-shadow:
+        0 1px 0 #8B8589,
+        0 2px 0 #7A7579,
+        0 3px 0 #696569,
+        0 4px 0 #585559,
+        0 5px 0 #474549,
+        0 6px 1px rgba(0, 0, 0, .1),
+        0 0 5px rgba(0, 0, 0, .1),
+        0 1px 3px rgba(0, 0, 0, .3),
+        0 3px 5px rgba(0, 0, 0, .2),
+        0 5px 10px rgba(0, 0, 0, .25),
+        0 10px 10px rgba(0, 0, 0, .2),
+        0 20px 20px rgba(0, 0, 0, .15);
+}
+
+.text-gradient-pop {
+    background: linear-gradient(135deg, #F2F3F4 0%, #E0A32B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(224, 163, 43, 0.2));
+}
+
+.text-3d-neon {
+    color: #fff;
+    text-shadow:
+        0 0 5px #E0A32B,
+        0 0 10px #E0A32B,
+        0 0 20px #E0A32B,
+        0 0 40px #E0A32B,
+        0 0 80px #E0A32B;
+}
+
+.glass-panel {
+    background: rgba(44, 52, 61, 0.6);
+    /* shadow-slate with opacity */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(224, 163, 43, 0.2);
+    /* marigold border */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+body {
+    -webkit-tap-highlight-color: transparent;
+}
