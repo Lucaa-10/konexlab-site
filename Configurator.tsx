@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Home, Building2, Store, Trees, XCircle, CheckCircle, MinusCircle, Wind, Cpu, PowerOff, ShieldAlert, Zap, Armchair, Mail, Check, Shield, Video, Sun, Thermometer, Lightbulb, Power, Camera, Radio, DoorOpen, BellRing, Flame, Droplets, Plug, ToggleLeft } from 'lucide-react';
+import { Home, Building2, Store, Trees, XCircle, CheckCircle, MinusCircle, Wind, Cpu, PowerOff, ShieldAlert, Zap, Armchair, Check, Shield, Video, Sun, Thermometer, Lightbulb, Power, Camera, Radio, DoorOpen, BellRing, Flame, Droplets, Plug, ToggleLeft } from 'lucide-react';
 import { CONFIG_DATA, DB_PRODUCTS } from '../constants';
 import { ProductDetail, ConfigStep, ConfigOption } from '../types';
 import { supabase } from '../lib/supabase';
