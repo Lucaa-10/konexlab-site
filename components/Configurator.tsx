@@ -285,70 +285,128 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
   }, [answers, title, contact]);
 
   // --- PDF Generation ---
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Header
-    doc.setFillColor(11, 17, 33); // Dark Blue
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
+    // Helper to load image
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(err);
+      });
+    };
+
+    // 1. Header Background
+    doc.setFillColor(11, 17, 33); // Dark Blue #0B1121
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    // 2. Logo / Brand
+    doc.setTextColor(224, 163, 43); // Gold #E0A32B
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
     doc.text("Konexlab", 20, 20);
+
+    doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
     doc.text("La Maison de Demain", 20, 30);
 
-    // Client Info
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text(`Étude personnalisée pour : ${contact.firstName} ${contact.lastName}`, 20, 60);
-    doc.setFontSize(10);
-    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, 66);
+    // 3. Project Image (Dynamic)
+    try {
+      // Find the image for the selected housing type (Step 1)
+      const housingType = answers[1];
+      const housingOption = CONFIG_DATA[1].opts.find(o => o.v === housingType);
 
-    // Title
+      if (housingOption && housingOption.img) {
+        const imgElement = await loadImage(housingOption.img);
+        // Aspect ratio calculation to fit width
+        const imgHeight = (imgElement.height * (pageWidth - 40)) / imgElement.width;
+        // Crop or fit? Let's fit width, max height 60
+        doc.addImage(imgElement, 'PNG', 20, 50, pageWidth - 40, 60, undefined, 'FAST');
+      }
+    } catch (e) {
+      console.warn("Could not load project image for PDF", e);
+    }
+
+    // 4. Title & Client Info
+    const startY = 120;
+    doc.setTextColor(11, 17, 33); // Dark Blue
     doc.setFontSize(18);
-    doc.setTextColor(224, 163, 43); // Gold
-    doc.text(title, 20, 80);
+    doc.setFont("helvetica", "bold");
+    doc.text(title, 20, startY);
 
-    // Equipment
-    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100); // Grey
+    doc.text(`Préparé pour : ${contact.firstName} ${contact.lastName}`, 20, startY + 8);
+    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, startY + 14);
+
+    // 5. Equipment List (2 Columns)
     doc.setFontSize(14);
-    doc.text("Matériel Recommandé :", 20, 100);
+    doc.setTextColor(11, 17, 33);
+    doc.setFont("helvetica", "bold");
+    doc.text("Votre Matériel Recommandé", 20, startY + 30);
 
-    let yPos = 110;
-    recProducts.forEach((p) => {
-      doc.setFontSize(12);
+    let yPos = startY + 40;
+    const colWidth = (pageWidth - 50) / 2;
+
+    recProducts.forEach((p, index) => {
+      const xPos = index % 2 === 0 ? 20 : 20 + colWidth + 10;
+      if (index % 2 === 0 && index !== 0) yPos += 25; // New row
+
+      doc.setFillColor(245, 247, 250); // Light grey bg
+      doc.roundedRect(xPos, yPos, colWidth, 20, 2, 2, 'F');
+
+      doc.setFontSize(11);
+      doc.setTextColor(11, 17, 33);
       doc.setFont("helvetica", "bold");
-      doc.text(`• ${p.title}`, 25, yPos);
+      doc.text(p.title, xPos + 5, yPos + 7);
+
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text(p.desc, 30, yPos + 5);
-      yPos += 15;
+      // Simple text wrap for description
+      const splitDesc = doc.splitTextToSize(p.desc, colWidth - 10);
+      doc.text(splitDesc, xPos + 5, yPos + 13);
     });
 
-    // Scenarios
-    yPos += 10;
+    // 6. Scenarios
+    yPos += 35;
     doc.setFontSize(14);
-    doc.text("Vos Scénarios Intelligents :", 20, yPos);
+    doc.setTextColor(11, 17, 33);
+    doc.setFont("helvetica", "bold");
+    doc.text("Vos Scénarios Intelligents", 20, yPos);
     yPos += 10;
 
     const scenarios = [
       "Départ Maison : Alarme ON + Lumières OFF + Chauffage ÉCO.",
-      "Simulation de Présence : Les lumières s'allument aléatoirement quand je suis en vacances.",
+      "Simulation de Présence : Les lumières s'allument aléatoirement.",
       "Nuit Tranquille : Alarme périmétrique ON + Volets fermés."
     ];
 
     scenarios.forEach((s) => {
-      doc.setFontSize(11);
-      doc.text(`- ${s}`, 25, yPos);
+      doc.setFillColor(224, 163, 43); // Gold bullet
+      doc.circle(23, yPos - 1, 1, 'F');
+
+      doc.setFontSize(10);
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
+      doc.text(s, 28, yPos);
       yPos += 8;
     });
 
-    // Footer
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Un expert Konexlab va vous recontacter sous 24h pour affiner cette étude.", 20, 280);
+    // 7. Footer
+    doc.setFillColor(11, 17, 33);
+    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text("Konexlab - Solutions Domotiques & Sécurité - www.konexlab.com", pageWidth / 2, pageHeight - 8, { align: 'center' });
 
-    doc.save("Konexlab_Etude.pdf");
+    doc.save("Konexlab_Etude_Premium.pdf");
   };
 
   return (
