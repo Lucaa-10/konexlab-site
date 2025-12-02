@@ -28,6 +28,7 @@ export const Configurator = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [contact, setContact] = useState({ firstName: '', lastName: '', email: '', phone: '' });
   const [direction, setDirection] = useState(1);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const handleNext = (val: string) => {
     setDirection(1);
@@ -38,8 +39,16 @@ export const Configurator = () => {
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!contact.email || !contact.firstName || !contact.lastName) return; // Basic validation
+
+    // Start Calculation Effect
+    setIsCalculating(true);
     setDirection(1);
-    setStep(prev => prev + 1);
+
+    // Wait for animation
+    setTimeout(() => {
+      setIsCalculating(false);
+      setStep(prev => prev + 1);
+    }, 3000);
   };
 
   const reset = () => {
@@ -82,9 +91,15 @@ export const Configurator = () => {
                 <StepContent step={step} data={CONFIG_DATA[step]} onSelect={handleNext} direction={direction} currentAnswer={answers[step]} />
               </motion.div>
             ) : step === 6 ? (
-              <motion.div key="contact" className="w-full">
-                <ContactForm contact={contact} setContact={setContact} onSubmit={handleContactSubmit} direction={direction} />
-              </motion.div>
+              isCalculating ? (
+                <motion.div key="calculating" className="w-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <Calculating />
+                </motion.div>
+              ) : (
+                <motion.div key="contact" className="w-full">
+                  <ContactForm contact={contact} setContact={setContact} onSubmit={handleContactSubmit} direction={direction} />
+                </motion.div>
+              )
             ) : (
               <motion.div key="result" className="w-full">
                 <ConfigResult answers={answers} contact={contact} onReset={reset} />
@@ -101,6 +116,63 @@ export const Configurator = () => {
   );
 };
 
+// --- Calculating Screen (Wow Effect) ---
+const Calculating = () => {
+  const [progress, setProgress] = useState(0);
+  const [text, setText] = useState("Analyse de votre logement...");
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 50);
+
+    setTimeout(() => setText("Sélection des meilleurs produits..."), 1000);
+    setTimeout(() => setText("Optimisation de votre pack..."), 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+      <div className="relative w-32 h-32 mb-8">
+        <svg className="w-full h-full" viewBox="0 0 100 100">
+          <circle
+            className="text-white/10 stroke-current"
+            strokeWidth="8"
+            cx="50"
+            cy="50"
+            r="40"
+            fill="transparent"
+          ></circle>
+          <circle
+            className="text-[#E0A32B] progress-ring__circle stroke-current"
+            strokeWidth="8"
+            strokeLinecap="round"
+            cx="50"
+            cy="50"
+            r="40"
+            fill="transparent"
+            strokeDasharray={`${2 * Math.PI * 40}`}
+            strokeDashoffset={`${2 * Math.PI * 40 * (1 - progress / 100)}`}
+            style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+          ></circle>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-2xl font-bold text-white">{progress}%</span>
+        </div>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-2 animate-pulse">{text}</h3>
+      <p className="text-slate-400">L'IA Konexlab travaille pour vous</p>
+    </div>
+  );
+};
+
 // --- Step Content ---
 const stepVariants: Variants = {
   enter: (direction: number) => ({ opacity: 0, x: direction > 0 ? 50 : -50 }),
@@ -109,6 +181,7 @@ const stepVariants: Variants = {
 };
 
 const StepContent = ({ step, data, onSelect, direction, currentAnswer }: { step: number, data: ConfigStep, onSelect: (val: string) => void, direction: number, currentAnswer?: string }) => (
+
   <motion.div
     custom={direction}
     variants={stepVariants}
