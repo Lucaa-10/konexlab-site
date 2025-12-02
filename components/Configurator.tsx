@@ -141,7 +141,7 @@ const StepContent = ({ step, data, onSelect, direction }: { step: number, data: 
                 <img
                   src={opt.img}
                   alt={opt.l}
-                  className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 text-transparent"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B1121] via-[#0B1121]/80 to-transparent opacity-90 group-hover:opacity-60 transition-all duration-500" />
               </div>
