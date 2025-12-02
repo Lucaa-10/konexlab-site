@@ -25,6 +25,7 @@ const ProductIconMap: Record<string, React.ElementType> = {
 export const Configurator = () => {
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [contact, setContact] = useState({ firstName: '', lastName: '', email: '', phone: '' });
   const [direction, setDirection] = useState(1);
 
   const handleNext = (val: string) => {
@@ -33,10 +34,18 @@ export const Configurator = () => {
     setStep(prev => prev + 1);
   };
 
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contact.email || !contact.firstName || !contact.lastName) return; // Basic validation
+    setDirection(1);
+    setStep(prev => prev + 1);
+  };
+
   const reset = () => {
     setDirection(-1);
     setStep(1);
     setAnswers({});
+    setContact({ firstName: '', lastName: '', email: '', phone: '' });
   };
 
   return (
@@ -44,12 +53,12 @@ export const Configurator = () => {
       <div className="relative bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[3rem] shadow-2xl shadow-black/50 p-8 sm:p-16 min-h-[600px] flex flex-col overflow-hidden">
 
         {/* Progress Dots */}
-        {step <= 5 && (
+        {step <= 6 && (
           <div className="flex flex-col items-center mb-12 z-10">
             <h2 className="text-3xl sm:text-5xl font-display font-bold text-white mb-3">Ton Projet sur-mesure</h2>
             <p className="text-slate-400 text-lg mb-8 font-light">Configure ta solution idéale en 30 secondes.</p>
             <div className="flex gap-3">
-              {[1, 2, 3, 4, 5].map(i => (
+              {[1, 2, 3, 4, 5, 6].map(i => (
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-500 ${i === step
@@ -71,9 +80,13 @@ export const Configurator = () => {
               <motion.div key={step} className="w-full">
                 <StepContent step={step} data={CONFIG_DATA[step]} onSelect={handleNext} direction={direction} />
               </motion.div>
+            ) : step === 6 ? (
+              <motion.div key="contact" className="w-full">
+                <ContactForm contact={contact} setContact={setContact} onSubmit={handleContactSubmit} direction={direction} />
+              </motion.div>
             ) : (
               <motion.div key="result" className="w-full">
-                <ConfigResult answers={answers} onReset={reset} />
+                <ConfigResult answers={answers} contact={contact} onReset={reset} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -140,8 +153,70 @@ const StepContent = ({ step, data, onSelect, direction }: { step: number, data: 
   </motion.div>
 );
 
+// --- Contact Form ---
+const ContactForm = ({ contact, setContact, onSubmit, direction }: { contact: any, setContact: any, onSubmit: any, direction: number }) => (
+  <motion.div
+    custom={direction}
+    variants={stepVariants}
+    initial="enter"
+    animate="center"
+    exit="exit"
+    className="w-full max-w-2xl mx-auto"
+  >
+    <div className="text-center mb-10">
+      <span className="inline-block py-1 px-3 rounded-full bg-[#E0A32B]/10 border border-[#E0A32B]/20 text-[#E0A32B] text-xs font-mono font-bold uppercase tracking-widest mb-4">
+        Étape 06 / 06
+      </span>
+      <h3 className="text-3xl sm:text-4xl font-display font-bold text-[#F2F3F4]">Vos Coordonnées</h3>
+      <p className="text-slate-400 mt-4">Pour vous envoyer votre configuration personnalisée.</p>
+    </div>
+
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          type="text"
+          placeholder="Prénom"
+          required
+          value={contact.firstName}
+          onChange={e => setContact({ ...contact, firstName: e.target.value })}
+          className="w-full p-4 rounded-xl bg-[#2C343D]/50 border border-[#E0A32B]/10 text-white placeholder-slate-500 focus:border-[#E0A32B] focus:outline-none transition-colors"
+        />
+        <input
+          type="text"
+          placeholder="Nom"
+          required
+          value={contact.lastName}
+          onChange={e => setContact({ ...contact, lastName: e.target.value })}
+          className="w-full p-4 rounded-xl bg-[#2C343D]/50 border border-[#E0A32B]/10 text-white placeholder-slate-500 focus:border-[#E0A32B] focus:outline-none transition-colors"
+        />
+      </div>
+      <input
+        type="email"
+        placeholder="Email"
+        required
+        value={contact.email}
+        onChange={e => setContact({ ...contact, email: e.target.value })}
+        className="w-full p-4 rounded-xl bg-[#2C343D]/50 border border-[#E0A32B]/10 text-white placeholder-slate-500 focus:border-[#E0A32B] focus:outline-none transition-colors"
+      />
+      <input
+        type="tel"
+        placeholder="Téléphone"
+        value={contact.phone}
+        onChange={e => setContact({ ...contact, phone: e.target.value })}
+        className="w-full p-4 rounded-xl bg-[#2C343D]/50 border border-[#E0A32B]/10 text-white placeholder-slate-500 focus:border-[#E0A32B] focus:outline-none transition-colors"
+      />
+      <button
+        type="submit"
+        className="w-full py-4 rounded-xl bg-[#E0A32B] text-[#0B1121] font-bold text-lg shadow-lg shadow-[#E0A32B]/20 hover:bg-[#F2B749] transition-all transform hover:scale-[1.02]"
+      >
+        Voir mon résultat
+      </button>
+    </form>
+  </motion.div>
+);
+
 // --- Result Content ---
-const ConfigResult = ({ answers, onReset }: { answers: Record<number, string>; onReset: () => void }) => {
+const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, string>; contact: any; onReset: () => void }) => {
   let recProducts: ProductDetail[] = [];
   let recScenarios: { t: string; i: string }[] = [];
   let title = "";
@@ -178,6 +253,10 @@ const ConfigResult = ({ answers, onReset }: { answers: Record<number, string>; o
               configuration: answers,
               pack_title: title,
               status: 'new',
+              first_name: contact.firstName,
+              last_name: contact.lastName,
+              email: contact.email,
+              phone: contact.phone,
               created_at: new Date().toISOString()
             }
           ]);
@@ -194,7 +273,7 @@ const ConfigResult = ({ answers, onReset }: { answers: Record<number, string>; o
     };
 
     saveLead();
-  }, [answers, title]);
+  }, [answers, title, contact]);
 
 
 
