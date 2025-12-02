@@ -79,7 +79,7 @@ export const Configurator = () => {
           <AnimatePresence mode="wait" custom={direction}>
             {step <= 5 ? (
               <motion.div key={step} className="w-full">
-                <StepContent step={step} data={CONFIG_DATA[step]} onSelect={handleNext} direction={direction} />
+                <StepContent step={step} data={CONFIG_DATA[step]} onSelect={handleNext} direction={direction} currentAnswer={answers[step]} />
               </motion.div>
             ) : step === 6 ? (
               <motion.div key="contact" className="w-full">
@@ -108,7 +108,7 @@ const stepVariants: Variants = {
   exit: (direction: number) => ({ opacity: 0, x: direction > 0 ? -50 : 50, transition: { duration: 0.2 } })
 };
 
-const StepContent = ({ step, data, onSelect, direction }: { step: number, data: ConfigStep, onSelect: (val: string) => void, direction: number }) => (
+const StepContent = ({ step, data, onSelect, direction, currentAnswer }: { step: number, data: ConfigStep, onSelect: (val: string) => void, direction: number, currentAnswer?: string }) => (
   <motion.div
     custom={direction}
     variants={stepVariants}
@@ -133,7 +133,12 @@ const StepContent = ({ step, data, onSelect, direction }: { step: number, data: 
             whileHover={{ y: -5, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(opt.v)}
-            className="group relative flex flex-col items-center justify-center gap-6 p-8 rounded-[2rem] bg-[#2C343D]/50 border border-[#E0A32B]/10 hover:border-[#E0A32B]/40 transition-all duration-300 overflow-hidden min-h-[280px]"
+            className={`group relative flex flex-col items-center justify-center gap-6 p-8 rounded-[2rem] 
+                    bg-white/5 backdrop-blur-md border border-white/10 
+                    hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]
+                    transition-all duration-300 overflow-hidden min-h-[280px]
+                    ${currentAnswer === opt.v ? 'ring-2 ring-[#E0A32B] bg-white/10' : ''}
+                  `}
           >
             {/* Background Image */}
             {opt.img && (
