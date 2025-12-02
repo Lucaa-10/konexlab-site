@@ -300,74 +300,97 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
   }, [answers, title, contact]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="text-center w-full max-w-2xl mx-auto"
-    >
-      <div className="inline-flex p-4 rounded-full bg-emerald-100 text-emerald-600 mb-4 shadow-lg shadow-emerald-500/20">
-        <Check size={32} />
-      </div>
-      <h3 className="text-xl text-slate-500 font-medium">Ton Résultat</h3>
-      <p className="text-2xl sm:text-3xl font-black text-slate-900 mb-8">{title}</p>
-
-      <div className="bg-white/80 p-6 rounded-2xl border border-white shadow-sm mb-4 text-left">
-        <h4 className="text-xs font-bold text-slate-400 uppercase mb-4">Matériel Recommandé</h4>
-        <div className="space-y-3">
-          {recProducts.map((p, i) => {
-            const Icon = ProductIconMap[p.icon] || Shield;
-            return (
-              <div key={i} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="p-2 bg-white rounded-lg text-slate-900 shadow-sm"><Icon size={20} /></div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{p.title}</p>
-                  <p className="text-xs text-slate-500">{p.desc}</p>
-                </div>
-              </div>
-            );
-          })}
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Immersive Background */}
+      {bgImage && (
+        <div className="fixed inset-0 z-0">
+          <img src={bgImage} className="w-full h-full object-cover blur-xl scale-110" alt="Background" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
-      </div>
+      )}
 
-      <div className="bg-white/80 p-6 rounded-2xl border border-white shadow-sm mb-8 text-left">
-        <h4 className="text-xs font-bold text-slate-400 uppercase mb-4">Ce que tu vas faire</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {recScenarios.map((s, i) => {
-            const Icon = resultIcons[s.i] || Shield;
-            return (
-              <div key={i} className="flex items-center gap-3 text-xs sm:text-sm font-medium text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                <Icon size={16} className="text-emerald-500" /> {s.t}
-              </div>
-            );
-          })}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-3xl mx-auto"
+      >
+        {/* Glassmorphism Card */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] p-8 sm:p-12 shadow-2xl shadow-black/50 overflow-hidden">
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex p-4 rounded-full bg-gradient-to-br from-[#E0A32B] to-[#F2B749] text-[#0B1121] mb-6 shadow-lg shadow-[#E0A32B]/30 animate-pulse">
+              <Check size={40} strokeWidth={2.5} />
+            </div>
+            <h3 className="text-xl text-slate-300 font-medium tracking-wide uppercase mb-2">Configuration Terminée</h3>
+            <h2 className="text-3xl sm:text-5xl font-display font-black text-white mb-4 drop-shadow-lg">{title}</h2>
+            <p className="text-slate-300 max-w-lg mx-auto">
+              Une solution parfaitement adaptée à votre {housingType.toLowerCase()}.
+            </p>
+          </div>
+
+          {/* Equipment Grid with Staggered Animation */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {recProducts.map((p, i) => {
+              const Icon = ProductIconMap[p.icon] || Shield;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + (i * 0.1) }}
+                  className="flex flex-col items-center text-center p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <div className="p-3 bg-white/10 rounded-xl text-[#E0A32B] mb-3"><Icon size={24} /></div>
+                  <p className="text-sm font-bold text-white mb-1">{p.title}</p>
+                  <p className="text-xs text-slate-400 leading-tight">{p.desc}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Scenarios */}
+          <div className="bg-black/20 rounded-2xl p-6 mb-10 border border-white/5">
+            <h4 className="text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider">Vos Scénarios Intelligents</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {recScenarios.map((s, i) => {
+                const Icon = resultIcons[s.i] || Shield;
+                return (
+                  <div key={i} className="flex items-center gap-3 text-xs sm:text-sm font-medium text-slate-200">
+                    <Icon size={16} className="text-[#E0A32B]" /> {s.t}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={() => generatePDF(false)}
+              className="group flex-1 py-5 rounded-xl bg-gradient-to-r from-[#E0A32B] to-[#F2B749] text-[#0B1121] font-bold text-lg shadow-xl shadow-[#E0A32B]/20 hover:shadow-[#E0A32B]/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+            >
+              <Download size={24} className="group-hover:animate-bounce" />
+              Télécharger mon Étude (PDF)
+            </button>
+            <button
+              onClick={onReset}
+              className="flex-1 py-5 rounded-xl bg-white/5 text-white font-bold text-lg border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              Recommencer
+            </button>
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-xs text-slate-500">
+              Un expert Konexlab a reçu votre dossier et vous recontactera sous 24h.
+            </p>
+          </div>
+
         </div>
-      </div>
-
-      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-8 flex items-center gap-3">
-        <div className="bg-emerald-100 p-2 rounded-full text-emerald-600">
-          <Check size={20} />
-        </div>
-        <p className="text-sm text-emerald-800 font-medium text-left">
-          Votre configuration a bien été transmise à notre équipe. Un expert Konexlab va l'analyser et vous recontacter sous 24h.
-        </p>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4">
-        <button
-          onClick={() => generatePDF(false)}
-          className="group flex-1 py-5 rounded-xl bg-gradient-to-r from-[#E0A32B] to-[#F2B749] text-[#0B1121] font-bold text-lg shadow-xl shadow-[#E0A32B]/20 hover:shadow-[#E0A32B]/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-        >
-          <Download size={24} className="group-hover:animate-bounce" />
-          Télécharger mon Étude (PDF)
-        </button>
-        <button
-          onClick={onReset}
-          className="flex-1 py-5 rounded-xl bg-white/5 text-white font-bold text-lg border border-white/10 hover:bg-white/10 transition-colors"
-        >
-          Recommencer
-        </button>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 
   // --- PDF Generation ---
