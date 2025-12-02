@@ -10,7 +10,7 @@ import { jsPDF } from 'jspdf';
 const iconMap: Record<string, React.ElementType> = {
   home: Home, 'building-2': Building2, store: Store, trees: Trees, 'x-circle': XCircle,
   'check-circle': CheckCircle, 'minus-circle': MinusCircle, wind: Wind, cpu: Cpu, 'power-off': PowerOff,
-  'shield-alert': ShieldAlert, zap: Zap, armchair: Armchair
+  'shield-alert': ShieldAlert, zap: Zap, armchair: Armchair, lightbulb: Lightbulb
 };
 
 const resultIcons: Record<string, React.ElementType> = {
