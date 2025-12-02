@@ -2,7 +2,7 @@ export type ProductKey = 'camera' | 'motion' | 'door' | 'smoke' | 'button' | 'si
 
 export interface ProductDetail {
   title: string;
-  name?: string; 
+  name?: string;
   icon: string;
   desc: string;
   specs?: string[];
@@ -12,6 +12,7 @@ export interface ConfigOption {
   l: string; // Label
   i: string; // Icon name
   v: string; // Value
+  img?: string; // Image path
 }
 
 export interface ConfigStep {

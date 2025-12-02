@@ -34,11 +34,11 @@ export const PRODUCT_DETAILS: Record<string, ProductDetail> = {
 };
 
 export const CONFIG_DATA: Record<number, ConfigStep> = {
-  1: { q: "C'est quoi ton logement ?", opts: [{ l: "Maison", i: "home", v: "Maison" }, { l: "Appart", i: "building-2", v: "Appart" }, { l: "Bureau", i: "store", v: "Bureau" }] },
-  2: { q: "T'as un extérieur ?", opts: [{ l: "Oui", i: "trees", v: "Oui" }, { l: "Non", i: "x-circle", v: "Non" }] },
-  3: { q: "L'isolation, ça dit quoi ?", opts: [{ l: "Top", i: "check-circle", v: "Bon" }, { l: "Moyen", i: "minus-circle", v: "Moyen" }, { l: "Bof", i: "wind", v: "Mauvais" }] },
-  4: { q: "Déjà équipé en domotique ?", opts: [{ l: "Oui", i: "cpu", v: "Oui" }, { l: "Non", i: "power-off", v: "Non" }] },
-  5: { q: "Ta priorité c'est quoi ?", opts: [{ l: "Sécurité", i: "shield-alert", v: "Secu" }, { l: "Économies", i: "zap", v: "Eco" }, { l: "Confort", i: "armchair", v: "Conf" }] }
+  1: { q: "C'est quoi ton logement ?", opts: [{ l: "Maison", i: "home", v: "Maison", img: "/assets/modern_house_option_1764673436863.png" }, { l: "Appart", i: "building-2", v: "Appart", img: "/assets/apartment_interior_1764673540632.png" }, { l: "Bureau", i: "store", v: "Bureau", img: "/assets/modern_office_1764673555771.png" }] },
+  2: { q: "T'as un extérieur ?", opts: [{ l: "Oui", i: "trees", v: "Oui", img: "/assets/garden_terrace_1764673571249.png" }, { l: "Non", i: "x-circle", v: "Non", img: "/assets/living_room_no_view_1764673606484.png" }] },
+  3: { q: "L'isolation, ça dit quoi ?", opts: [{ l: "Top", i: "check-circle", v: "Bon", img: "/assets/insulation_good_1764673621158.png" }, { l: "Moyen", i: "minus-circle", v: "Moyen", img: "/assets/insulation_medium_1764673636265.png" }, { l: "Bof", i: "wind", v: "Mauvais", img: "/assets/insulation_medium_1764673636265.png" }] },
+  4: { q: "Déjà équipé en domotique ?", opts: [{ l: "Oui", i: "cpu", v: "Oui", img: "/assets/modern_office_1764673555771.png" }, { l: "Non", i: "power-off", v: "Non", img: "/assets/living_room_no_view_1764673606484.png" }] },
+  5: { q: "Ta priorité c'est quoi ?", opts: [{ l: "Sécurité", i: "shield-alert", v: "Secu", img: "/assets/modern_house_option_1764673436863.png" }, { l: "Économies", i: "zap", v: "Eco", img: "/assets/insulation_good_1764673621158.png" }, { l: "Confort", i: "armchair", v: "Conf", img: "/assets/apartment_interior_1764673540632.png" }] }
 };
 
 export const DB_PRODUCTS: Record<ProductKey, ProductDetail> = {
@@ -51,5 +51,5 @@ export const DB_PRODUCTS: Record<ProductKey, ProductDetail> = {
   temp: { title: "Capteur Température", icon: "droplets", desc: "Suivi climat" },
   plug: { title: "Prise Connectée", icon: "plug", desc: "Contrôle appareils" },
   switch: { title: "Interrupteur Sans Fil", icon: "toggle-left", desc: "Commande lumière" },
-  button: { title: "Bouton", icon: "shield", desc: "Contrôle alarme"}
+  button: { title: "Bouton", icon: "shield", desc: "Contrôle alarme" }
 };
