@@ -404,20 +404,34 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Helper to load image
+    // Helper to load image with timeout
     const loadImage = (src: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
         const img = new Image();
+        img.crossOrigin = "Anonymous"; // Try to avoid CORS issues
         img.src = src;
-        img.onload = () => resolve(img);
-        img.onerror = (err) => reject(err);
+
+        const timeout = setTimeout(() => reject(new Error("Image load timeout")), 5000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(img);
+        };
+        img.onerror = (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        };
       });
     };
+
+    console.log("Generating PDF... Return Blob:", returnBlob);
 
     // 1. Background Image (Full Page)
     try {
       if (bgImage) {
+        console.log("Loading background image:", bgImage);
         const imgElement = await loadImage(bgImage);
+        console.log("Image loaded");
         doc.addImage(imgElement, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
 
         // Dark Overlay
