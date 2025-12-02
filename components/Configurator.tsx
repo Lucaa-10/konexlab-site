@@ -636,6 +636,47 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
             </div>
           </div>
 
+          {/* Price Comparator (The Killer Feature) */}
+          <div className="mb-10 p-6 rounded-2xl bg-gradient-to-br from-[#0B1121] to-[#1a2333] border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#E0A32B]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+            <h4 className="text-center text-lg font-bold text-white mb-6">Pourquoi choisir Konexlab ?</h4>
+
+            <div className="grid grid-cols-3 gap-4 text-center items-end">
+              {/* Labels */}
+              <div className="text-left space-y-4 pb-2">
+                <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Abonnement Mensuel</div>
+                <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Engagement</div>
+                <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Coût sur 5 ans</div>
+              </div>
+
+              {/* Competitors */}
+              <div className="space-y-4 pb-2 opacity-50 grayscale">
+                <div className="text-xs font-bold text-slate-300 mb-2">Alarmes Classiques</div>
+                <div className="h-8 flex items-center justify-center text-slate-300 font-mono">49€ / mois</div>
+                <div className="h-8 flex items-center justify-center text-slate-300">36 mois</div>
+                <div className="h-8 flex items-center justify-center text-red-400 font-bold font-mono">~ 2 940 €</div>
+              </div>
+
+              {/* Konexlab */}
+              <div className="space-y-4 pb-2 relative">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#E0A32B] text-[#0B1121] text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                  MEILLEUR CHOIX
+                </div>
+                <div className="text-xs font-bold text-[#E0A32B] mb-2">Konexlab</div>
+                <div className="h-8 flex items-center justify-center text-white font-bold text-lg font-mono">0€</div>
+                <div className="h-8 flex items-center justify-center text-white">Aucun</div>
+                <div className="h-8 flex items-center justify-center text-[#4ADE80] font-bold text-lg font-mono">0 €</div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/5 text-center">
+              <p className="text-sm text-slate-300">
+                Économie réalisée : <span className="text-[#E0A32B] font-bold text-lg">2 940 €</span>
+              </p>
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4">
             <button
