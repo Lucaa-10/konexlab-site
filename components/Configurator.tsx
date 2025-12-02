@@ -518,6 +518,12 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
       doc.setLineWidth(0.5);
       doc.circle(xCenter, yPos + 10, 12, 'S');
 
+      // Step Number (Icon replacement for PDF)
+      doc.setFontSize(12);
+      doc.setTextColor(224, 163, 43);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(i + 1), xCenter, yPos + 11.5, { align: 'center' });
+
       // Step Text
       doc.setFontSize(10);
       doc.setTextColor(255, 255, 255);
