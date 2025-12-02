@@ -670,45 +670,84 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
             </div>
           </div>
 
-          {/* Price Comparator (The Killer Feature) */}
+          {/* Value Proposition (Contextual) */}
           <div className="mb-10 p-6 rounded-2xl bg-gradient-to-br from-[#0B1121] to-[#1a2333] border border-white/10 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#E0A32B]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-            <h4 className="text-center text-lg font-bold text-white mb-6">Pourquoi choisir Konexlab ?</h4>
-
-            <div className="grid grid-cols-3 gap-4 text-center items-end">
-              {/* Labels */}
-              <div className="text-left space-y-4 pb-2">
-                <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Abonnement Mensuel</div>
-                <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Engagement</div>
-                <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Coût sur 5 ans</div>
-              </div>
-
-              {/* Competitors */}
-              <div className="space-y-4 pb-2 opacity-50 grayscale">
-                <div className="text-xs font-bold text-slate-300 mb-2">Alarmes Classiques</div>
-                <div className="h-8 flex items-center justify-center text-slate-300 font-mono">49€ / mois</div>
-                <div className="h-8 flex items-center justify-center text-slate-300">36 mois</div>
-                <div className="h-8 flex items-center justify-center text-red-400 font-bold font-mono">~ 2 940 €</div>
-              </div>
-
-              {/* Konexlab */}
-              <div className="space-y-4 pb-2 relative">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#E0A32B] text-[#0B1121] text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                  MEILLEUR CHOIX
+            {answers[5] === 'Secu' ? (
+              <>
+                <h4 className="text-center text-lg font-bold text-white mb-6">Pourquoi choisir Konexlab ?</h4>
+                <div className="grid grid-cols-3 gap-4 text-center items-end">
+                  <div className="text-left space-y-4 pb-2">
+                    <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Abonnement Mensuel</div>
+                    <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Engagement</div>
+                    <div className="text-xs text-slate-400 font-medium h-8 flex items-center">Coût sur 5 ans</div>
+                  </div>
+                  <div className="space-y-4 pb-2 opacity-50 grayscale">
+                    <div className="text-xs font-bold text-slate-300 mb-2">Alarmes Classiques</div>
+                    <div className="h-8 flex items-center justify-center text-slate-300 font-mono">49€ / mois</div>
+                    <div className="h-8 flex items-center justify-center text-slate-300">36 mois</div>
+                    <div className="h-8 flex items-center justify-center text-red-400 font-bold font-mono">~ 2 940 €</div>
+                  </div>
+                  <div className="space-y-4 pb-2 relative">
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#E0A32B] text-[#0B1121] text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">MEILLEUR CHOIX</div>
+                    <div className="text-xs font-bold text-[#E0A32B] mb-2">Konexlab</div>
+                    <div className="h-8 flex items-center justify-center text-white font-bold text-lg font-mono">0€</div>
+                    <div className="h-8 flex items-center justify-center text-white">Aucun</div>
+                    <div className="h-8 flex items-center justify-center text-[#4ADE80] font-bold text-lg font-mono">0 €</div>
+                  </div>
                 </div>
-                <div className="text-xs font-bold text-[#E0A32B] mb-2">Konexlab</div>
-                <div className="h-8 flex items-center justify-center text-white font-bold text-lg font-mono">0€</div>
-                <div className="h-8 flex items-center justify-center text-white">Aucun</div>
-                <div className="h-8 flex items-center justify-center text-[#4ADE80] font-bold text-lg font-mono">0 €</div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-white/5 text-center">
-              <p className="text-sm text-slate-300">
-                Économie réalisée : <span className="text-[#E0A32B] font-bold text-lg">2 940 €</span>
-              </p>
-            </div>
+                <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                  <p className="text-sm text-slate-300">Économie réalisée : <span className="text-[#E0A32B] font-bold text-lg">2 940 €</span></p>
+                </div>
+              </>
+            ) : answers[5] === 'Eco' ? (
+              <>
+                <h4 className="text-center text-lg font-bold text-white mb-6">Vos Gains Énergétiques Estimés</h4>
+                <div className="grid grid-cols-2 gap-8 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-2">
+                      <Thermometer size={24} />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono">-15%</div>
+                    <p className="text-xs text-slate-400">Sur votre facture de chauffage grâce aux têtes thermostatiques intelligentes.</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-2">
+                      <Zap size={24} />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono">-10%</div>
+                    <p className="text-xs text-slate-400">D'électricité en moins grâce à la gestion automatique des appareils.</p>
+                  </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                  <p className="text-sm text-slate-300">Rentabilité estimée : <span className="text-[#E0A32B] font-bold text-lg">Moins de 2 hivers</span></p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h4 className="text-center text-lg font-bold text-white mb-6">Votre Nouveau Confort de Vie</h4>
+                <div className="grid grid-cols-2 gap-8 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mb-2">
+                      <Armchair size={24} />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono">Zen</div>
+                    <p className="text-xs text-slate-400">Plus besoin de penser à éteindre les lumières. La maison gère tout pour vous.</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 mb-2">
+                      <Smartphone size={24} />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono">30 min</div>
+                    <p className="text-xs text-slate-400">De temps gagné chaque jour sur vos routines quotidiennes.</p>
+                  </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                  <p className="text-sm text-slate-300">Expérience : <span className="text-[#E0A32B] font-bold text-lg">Maison 100% Autonome</span></p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Actions */}
