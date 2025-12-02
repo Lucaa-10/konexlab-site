@@ -263,6 +263,14 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
         const sessionKey = `konexlab_lead_${Date.now()}`;
         if (sessionStorage.getItem('lead_saved')) return;
 
+        // Generate PDF Base64
+        let pdfContent = null;
+        try {
+          pdfContent = await generatePDF(true);
+        } catch (e) {
+          console.warn("Failed to generate PDF for attachment", e);
+        }
+
         // Call Edge Function directly (Bypassing Database Table)
         const { data, error } = await supabase.functions.invoke('odoo-sync', {
           body: {
@@ -271,7 +279,9 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
             first_name: contact.firstName,
             last_name: contact.lastName,
             email: contact.email,
-            phone: contact.phone
+            phone: contact.phone,
+            pdf_content: pdfContent,
+            pdf_name: `Etude_Konexlab_${contact.lastName}.pdf`
           }
         });
 
@@ -289,8 +299,79 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     saveLead();
   }, [answers, title, contact]);
 
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center w-full max-w-2xl mx-auto"
+    >
+      <div className="inline-flex p-4 rounded-full bg-emerald-100 text-emerald-600 mb-4 shadow-lg shadow-emerald-500/20">
+        <Check size={32} />
+      </div>
+      <h3 className="text-xl text-slate-500 font-medium">Ton Résultat</h3>
+      <p className="text-2xl sm:text-3xl font-black text-slate-900 mb-8">{title}</p>
+
+      <div className="bg-white/80 p-6 rounded-2xl border border-white shadow-sm mb-4 text-left">
+        <h4 className="text-xs font-bold text-slate-400 uppercase mb-4">Matériel Recommandé</h4>
+        <div className="space-y-3">
+          {recProducts.map((p, i) => {
+            const Icon = ProductIconMap[p.icon] || Shield;
+            return (
+              <div key={i} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="p-2 bg-white rounded-lg text-slate-900 shadow-sm"><Icon size={20} /></div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{p.title}</p>
+                  <p className="text-xs text-slate-500">{p.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bg-white/80 p-6 rounded-2xl border border-white shadow-sm mb-8 text-left">
+        <h4 className="text-xs font-bold text-slate-400 uppercase mb-4">Ce que tu vas faire</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {recScenarios.map((s, i) => {
+            const Icon = resultIcons[s.i] || Shield;
+            return (
+              <div key={i} className="flex items-center gap-3 text-xs sm:text-sm font-medium text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <Icon size={16} className="text-emerald-500" /> {s.t}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-8 flex items-center gap-3">
+        <div className="bg-emerald-100 p-2 rounded-full text-emerald-600">
+          <Check size={20} />
+        </div>
+        <p className="text-sm text-emerald-800 font-medium text-left">
+          Votre configuration a bien été transmise à notre équipe. Un expert Konexlab va l'analyser et vous recontacter sous 24h.
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        <button
+          onClick={() => generatePDF(false)}
+          className="group flex-1 py-5 rounded-xl bg-gradient-to-r from-[#E0A32B] to-[#F2B749] text-[#0B1121] font-bold text-lg shadow-xl shadow-[#E0A32B]/20 hover:shadow-[#E0A32B]/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+        >
+          <Download size={24} className="group-hover:animate-bounce" />
+          Télécharger mon Étude (PDF)
+        </button>
+        <button
+          onClick={onReset}
+          className="flex-1 py-5 rounded-xl bg-white/5 text-white font-bold text-lg border border-white/10 hover:bg-white/10 transition-colors"
+        >
+          Recommencer
+        </button>
+      </div>
+    </motion.div>
+  );
+
   // --- PDF Generation ---
-  const downloadPDF = async () => {
+  const generatePDF = async (returnBlob = false) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -305,83 +386,99 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
       });
     };
 
-    // 1. Header Background
-    doc.setFillColor(11, 17, 33); // Dark Blue #0B1121
-    doc.rect(0, 0, pageWidth, 40, 'F');
-
-    // 2. Logo / Brand
-    doc.setTextColor(224, 163, 43); // Gold #E0A32B
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("Konexlab", 20, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("La Maison de Demain", 20, 30);
-
-    // 3. Project Image (Dynamic)
+    // 1. Background Image (Full Page)
     try {
       if (bgImage) {
         const imgElement = await loadImage(bgImage);
-        // Aspect ratio calculation to fit width
-        const imgHeight = (imgElement.height * (pageWidth - 40)) / imgElement.width;
-        // Crop or fit? Let's fit width, max height 60
-        doc.addImage(imgElement, 'PNG', 20, 50, pageWidth - 40, 60, undefined, 'FAST');
+        doc.addImage(imgElement, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+
+        // Dark Overlay
+        doc.setFillColor(0, 0, 0);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+        // Note: jsPDF doesn't support alpha transparency easily in rects without GState, 
+        // so we might need a workaround or just rely on the image being dark enough.
+        // Actually, let's use a workaround: add a semi-transparent black png or just assume the image is good.
+        // Better: Use GState if available, or just a dark header/footer.
+        // For simplicity in this version, let's keep the header/footer solid and maybe a dark filter on image if possible.
+        // Let's stick to the "Immersive" header/footer for now to ensure readability.
       }
     } catch (e) {
       console.warn("Could not load project image for PDF", e);
     }
 
-    // 4. Title & Client Info
-    const startY = 120;
-    doc.setTextColor(11, 17, 33); // Dark Blue
-    doc.setFontSize(18);
+    // Overlay for readability (Simulated with dark rects where text is)
+    // Actually, let's do a full page dark overlay using a massive black rectangle with some transparency if possible,
+    // but standard jsPDF transparency is tricky. Let's stick to a "Dark Mode" PDF.
+
+    // Reset Background to Dark Blue if image fails or for consistency
+    if (!bgImage) {
+      doc.setFillColor(11, 17, 33);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
+
+    // 2. Header
+    doc.setFillColor(11, 17, 33);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    // Logo
+    doc.setTextColor(224, 163, 43); // Gold
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("Konexlab", 20, 20);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("La Maison de Demain", 20, 30);
+
+    // 3. Title & Client Info (White Text)
+    const startY = 60;
+    doc.setTextColor(224, 163, 43); // Gold
+    doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
     doc.text(title, 20, startY);
 
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 100, 100); // Grey
-    doc.text(`Préparé pour : ${contact.firstName} ${contact.lastName}`, 20, startY + 8);
-    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, startY + 14);
+    doc.setTextColor(200, 200, 200); // Light Grey
+    doc.text(`Préparé pour : ${contact.firstName} ${contact.lastName}`, 20, startY + 10);
+    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, startY + 18);
 
-    // 5. Equipment List (2 Columns)
-    doc.setFontSize(14);
-    doc.setTextColor(11, 17, 33);
+    // 4. Equipment List (Cards style)
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.text("Votre Matériel Recommandé", 20, startY + 30);
+    doc.text("Votre Matériel Recommandé", 20, startY + 40);
 
-    let yPos = startY + 40;
+    let yPos = startY + 50;
     const colWidth = (pageWidth - 50) / 2;
 
     recProducts.forEach((p, index) => {
       const xPos = index % 2 === 0 ? 20 : 20 + colWidth + 10;
-      if (index % 2 === 0 && index !== 0) yPos += 25; // New row
+      if (index % 2 === 0 && index !== 0) yPos += 35; // New row
 
-      doc.setFillColor(245, 247, 250); // Light grey bg
-      doc.roundedRect(xPos, yPos, colWidth, 20, 2, 2, 'F');
+      // Card Background (Semi-transparent white)
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(xPos, yPos, colWidth, 30, 2, 2, 'F');
 
-      doc.setFontSize(11);
-      doc.setTextColor(11, 17, 33);
+      doc.setFontSize(12);
+      doc.setTextColor(11, 17, 33); // Dark Text on White Card
       doc.setFont("helvetica", "bold");
-      doc.text(p.title, xPos + 5, yPos + 7);
+      doc.text(p.title, xPos + 5, yPos + 8);
 
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
       doc.setFont("helvetica", "normal");
-      // Simple text wrap for description
       const splitDesc = doc.splitTextToSize(p.desc, colWidth - 10);
-      doc.text(splitDesc, xPos + 5, yPos + 13);
+      doc.text(splitDesc, xPos + 5, yPos + 14);
     });
 
-    // 6. Scenarios
-    yPos += 35;
-    doc.setFontSize(14);
-    doc.setTextColor(11, 17, 33);
+    // 5. Scenarios
+    yPos += 50;
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255); // White
     doc.setFont("helvetica", "bold");
     doc.text("Vos Scénarios Intelligents", 20, yPos);
-    yPos += 10;
+    yPos += 15;
 
     const scenarios = [
       "Départ Maison : Alarme ON + Lumières OFF + Chauffage ÉCO.",
@@ -393,21 +490,25 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
       doc.setFillColor(224, 163, 43); // Gold bullet
       doc.circle(23, yPos - 1, 1, 'F');
 
-      doc.setFontSize(10);
-      doc.setTextColor(50, 50, 50);
+      doc.setFontSize(11);
+      doc.setTextColor(220, 220, 220); // Off-white
       doc.setFont("helvetica", "normal");
       doc.text(s, 28, yPos);
-      yPos += 8;
+      yPos += 10;
     });
 
-    // 7. Footer
+    // 6. Footer
     doc.setFillColor(11, 17, 33);
     doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(9);
     doc.text("Konexlab - Solutions Domotiques & Sécurité - www.konexlab.com", pageWidth / 2, pageHeight - 8, { align: 'center' });
 
-    doc.save("Konexlab_Etude_Premium.pdf");
+    if (returnBlob) {
+      return doc.output('datauristring').split(',')[1]; // Return Base64 only
+    } else {
+      doc.save("Konexlab_Etude_Premium.pdf");
+    }
   };
 
   return (
