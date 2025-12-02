@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Home, Building2, Store, Trees, XCircle, CheckCircle, MinusCircle, Wind, Cpu, PowerOff, ShieldAlert, Zap, Armchair, Check, Shield, Video, Sun, Thermometer, Lightbulb, Power, Camera, Radio, DoorOpen, BellRing, Flame, Droplets, Plug, ToggleLeft, Download } from 'lucide-react';
+import { Home, Building2, Store, Trees, XCircle, CheckCircle, MinusCircle, Wind, Cpu, PowerOff, ShieldAlert, Zap, Armchair, Check, Shield, Video, Sun, Thermometer, Lightbulb, Power, Camera, Radio, DoorOpen, BellRing, Flame, Droplets, Plug, ToggleLeft, Download, Smartphone, Footprints, Euro, Lock } from 'lucide-react';
 import { CONFIG_DATA, DB_PRODUCTS } from '../constants';
 import { ProductDetail, ConfigStep, ConfigOption } from '../types';
 import { supabase } from '../lib/supabase';
@@ -312,19 +312,32 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
   let recScenarios: { t: string; i: string }[] = [];
   let title = "";
 
+  let scenarioFlow: { t: string; i: any }[] = [];
+
   if (answers[5] === 'Secu') {
     title = "Pack Sécurité Sur-Mesure";
     recProducts.push(DB_PRODUCTS.door, DB_PRODUCTS.motion, DB_PRODUCTS.siren);
-    recScenarios.push({ t: "Alerte Intrusion", i: "shield-alert" }, { t: "Vidéo Preuve", i: "video" });
-    if (answers[2] === 'Oui') recScenarios.push({ t: "Surveillance Jardin", i: "sun" });
+    scenarioFlow = [
+      { t: "Intrusion Détectée", i: Footprints },
+      { t: "Sirène 105dB", i: BellRing },
+      { t: "Alerte Mobile", i: Smartphone }
+    ];
   } else if (answers[5] === 'Eco') {
     title = "Pack Économies d'Énergie";
     recProducts.push(DB_PRODUCTS.thermo, DB_PRODUCTS.temp, DB_PRODUCTS.door);
-    recScenarios.push({ t: "Chauffage Intelligent", i: "thermometer" }, { t: "Stop Gaspillage", i: "wind" });
+    scenarioFlow = [
+      { t: "Fenêtre Ouverte", i: Wind },
+      { t: "Chauffage Coupé", i: Thermometer },
+      { t: "Économies €", i: Euro }
+    ];
   } else {
     title = "Pack Confort Absolu";
     recProducts.push(DB_PRODUCTS.switch, DB_PRODUCTS.plug, DB_PRODUCTS.motion);
-    recScenarios.push({ t: "Lumière Auto", i: "lightbulb" }, { t: "Tout éteindre", i: "power" });
+    scenarioFlow = [
+      { t: "Retour Maison", i: Home },
+      { t: "Lumières On", i: Lightbulb },
+      { t: "Ambiance Cozy", i: Armchair }
+    ];
   }
 
   // Get Background Image
@@ -470,16 +483,13 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
       doc.text(splitDesc, xPos + 5, yPos + 18);
     });
 
-    // 5. Scenarios
+    // 5. Scenario Flow (Visual)
     yPos += (cardHeight + 25);
 
     // Check for page break
-    if (yPos > pageHeight - 40) {
+    if (yPos > pageHeight - 60) {
       doc.addPage();
       yPos = 40;
-      // Re-apply background if needed, but for now let's keep it simple (single page mostly)
-      // If multi-page, we'd need to re-draw bg. 
-      // Let's assume single page for this MVP or just dark bg.
       doc.setFillColor(11, 17, 33);
       doc.rect(0, 0, pageWidth, pageHeight, 'F');
     }
@@ -487,25 +497,40 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     doc.setFontSize(14);
     doc.setTextColor(224, 163, 43);
     doc.setFont("helvetica", "bold");
-    doc.text("VOS SCÉNARIOS INTELLIGENTS", 20, yPos);
-    yPos += 15;
+    doc.text("VOTRE EXPÉRIENCE AU QUOTIDIEN", 20, yPos);
+    yPos += 20;
 
-    const scenarios = [
-      "Départ Maison : Alarme ON + Lumières OFF + Chauffage ÉCO.",
-      "Simulation de Présence : Les lumières s'allument aléatoirement.",
-      "Nuit Tranquille : Alarme périmétrique ON + Volets fermés."
-    ];
+    // Draw Flow Steps
+    const flowStepWidth = (pageWidth - 40) / 3;
 
-    scenarios.forEach((s) => {
-      // Bullet
-      doc.setFillColor(224, 163, 43);
-      doc.circle(23, yPos - 1.5, 1.5, 'F');
+    scenarioFlow.forEach((s, i) => {
+      const xCenter = 20 + (i * flowStepWidth) + (flowStepWidth / 2);
 
+      // Circle background for step
+      doc.setFillColor(255, 255, 255);
+      doc.saveGraphicsState();
+      // @ts-ignore
+      doc.setGState(new doc.GState({ opacity: 0.1 }));
+      doc.circle(xCenter, yPos + 10, 12, 'F');
+      doc.restoreGraphicsState();
+
+      doc.setDrawColor(224, 163, 43);
+      doc.setLineWidth(0.5);
+      doc.circle(xCenter, yPos + 10, 12, 'S');
+
+      // Step Text
       doc.setFontSize(10);
-      doc.setTextColor(230, 230, 230);
-      doc.setFont("helvetica", "normal");
-      doc.text(s, 28, yPos);
-      yPos += 10;
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text(s.t, xCenter, yPos + 30, { align: 'center' });
+
+      // Arrow to next step
+      if (i < scenarioFlow.length - 1) {
+        const arrowX = 20 + ((i + 1) * flowStepWidth);
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(16);
+        doc.text(">", arrowX, yPos + 12, { align: 'center' });
+      }
     });
 
     // 6. Footer
@@ -621,15 +646,24 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
             })}
           </div>
 
-          {/* Scenarios */}
-          <div className="bg-black/20 rounded-2xl p-6 mb-10 border border-white/5">
-            <h4 className="text-xs font-bold text-slate-400 uppercase mb-4 tracking-wider">Vos Scénarios Intelligents</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {recScenarios.map((s, i) => {
-                const Icon = resultIcons[s.i] || Shield;
+          {/* Visual Scenario Flow */}
+          <div className="bg-white/5 rounded-2xl p-6 mb-10 border border-white/10">
+            <h4 className="text-xs font-bold text-slate-400 uppercase mb-6 tracking-wider text-center">Votre Expérience au Quotidien</h4>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative">
+              {/* Connecting Line (Desktop) */}
+              <div className="hidden sm:block absolute top-1/2 left-10 right-10 h-0.5 bg-gradient-to-r from-white/5 via-[#E0A32B]/50 to-white/5 -translate-y-1/2 z-0" />
+
+              {scenarioFlow.map((s, i) => {
+                const Icon = s.i;
                 return (
-                  <div key={i} className="flex items-center gap-3 text-xs sm:text-sm font-medium text-slate-200">
-                    <Icon size={16} className="text-[#E0A32B]" /> {s.t}
+                  <div key={i} className="relative z-10 flex flex-col items-center gap-3 w-full sm:w-1/3">
+                    <div className="w-16 h-16 rounded-full bg-[#0B1121] border border-[#E0A32B]/30 flex items-center justify-center shadow-[0_0_15px_rgba(224,163,43,0.2)]">
+                      <Icon size={28} className="text-[#E0A32B]" />
+                    </div>
+                    <p className="text-sm font-bold text-white text-center">{s.t}</p>
+                    {i < scenarioFlow.length - 1 && (
+                      <div className="sm:hidden text-slate-500">↓</div>
+                    )}
                   </div>
                 );
               })}
