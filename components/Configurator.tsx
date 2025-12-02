@@ -259,6 +259,151 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
   const housingOption = CONFIG_DATA[1].opts.find(o => o.v === housingType);
   const bgImage = housingOption?.img;
 
+  // --- PDF Generation ---
+  const generatePDF = async (returnBlob = false) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Helper to load image with timeout
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous"; // Try to avoid CORS issues
+        img.src = src;
+
+        const timeout = setTimeout(() => reject(new Error("Image load timeout")), 5000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(img);
+        };
+        img.onerror = (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        };
+      });
+    };
+
+    console.log("Generating PDF... Return Blob:", returnBlob);
+
+    // 1. Background Image (Full Page)
+    try {
+      if (bgImage) {
+        console.log("Loading background image:", bgImage);
+        const imgElement = await loadImage(bgImage);
+        console.log("Image loaded");
+        doc.addImage(imgElement, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+
+        // Dark Overlay
+        doc.setFillColor(0, 0, 0);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+      }
+    } catch (e) {
+      console.warn("Could not load project image for PDF", e);
+    }
+
+    // Reset Background to Dark Blue if image fails or for consistency
+    if (!bgImage) {
+      doc.setFillColor(11, 17, 33);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
+
+    // 2. Header
+    doc.setFillColor(11, 17, 33);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    // Logo
+    doc.setTextColor(224, 163, 43); // Gold
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("Konexlab", 20, 20);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("La Maison de Demain", 20, 30);
+
+    // 3. Title & Client Info (White Text)
+    const startY = 60;
+    doc.setTextColor(224, 163, 43); // Gold
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text(title, 20, startY);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(200, 200, 200); // Light Grey
+    doc.text(`Préparé pour : ${contact.firstName} ${contact.lastName}`, 20, startY + 10);
+    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, startY + 18);
+
+    // 4. Equipment List (Cards style)
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("Votre Matériel Recommandé", 20, startY + 40);
+
+    let yPos = startY + 50;
+    const colWidth = (pageWidth - 50) / 2;
+
+    recProducts.forEach((p, index) => {
+      const xPos = index % 2 === 0 ? 20 : 20 + colWidth + 10;
+      if (index % 2 === 0 && index !== 0) yPos += 35; // New row
+
+      // Card Background (Semi-transparent white)
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(xPos, yPos, colWidth, 30, 2, 2, 'F');
+
+      doc.setFontSize(12);
+      doc.setTextColor(11, 17, 33); // Dark Text on White Card
+      doc.setFont("helvetica", "bold");
+      doc.text(p.title, xPos + 5, yPos + 8);
+
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "normal");
+      const splitDesc = doc.splitTextToSize(p.desc, colWidth - 10);
+      doc.text(splitDesc, xPos + 5, yPos + 14);
+    });
+
+    // 5. Scenarios
+    yPos += 50;
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255); // White
+    doc.setFont("helvetica", "bold");
+    doc.text("Vos Scénarios Intelligents", 20, yPos);
+    yPos += 15;
+
+    const scenarios = [
+      "Départ Maison : Alarme ON + Lumières OFF + Chauffage ÉCO.",
+      "Simulation de Présence : Les lumières s'allument aléatoirement.",
+      "Nuit Tranquille : Alarme périmétrique ON + Volets fermés."
+    ];
+
+    scenarios.forEach((s) => {
+      doc.setFillColor(224, 163, 43); // Gold bullet
+      doc.circle(23, yPos - 1, 1, 'F');
+
+      doc.setFontSize(11);
+      doc.setTextColor(220, 220, 220); // Off-white
+      doc.setFont("helvetica", "normal");
+      doc.text(s, 28, yPos);
+      yPos += 10;
+    });
+
+    // 6. Footer
+    doc.setFillColor(11, 17, 33);
+    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text("Konexlab - Solutions Domotiques & Sécurité - www.konexlab.com", pageWidth / 2, pageHeight - 8, { align: 'center' });
+
+    if (returnBlob) {
+      return doc.output('datauristring').split(',')[1]; // Return Base64 only
+    } else {
+      doc.save("Konexlab_Etude_Premium.pdf");
+    }
+  };
+
   // --- Supabase Integration (Direct Edge Function) ---
   React.useEffect(() => {
     const saveLead = async () => {
@@ -398,160 +543,7 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     </div>
   );
 
-  // --- PDF Generation ---
-  const generatePDF = async (returnBlob = false) => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Helper to load image with timeout
-    const loadImage = (src: string): Promise<HTMLImageElement> => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous"; // Try to avoid CORS issues
-        img.src = src;
-
-        const timeout = setTimeout(() => reject(new Error("Image load timeout")), 5000);
-
-        img.onload = () => {
-          clearTimeout(timeout);
-          resolve(img);
-        };
-        img.onerror = (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        };
-      });
-    };
-
-    console.log("Generating PDF... Return Blob:", returnBlob);
-
-    // 1. Background Image (Full Page)
-    try {
-      if (bgImage) {
-        console.log("Loading background image:", bgImage);
-        const imgElement = await loadImage(bgImage);
-        console.log("Image loaded");
-        doc.addImage(imgElement, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-
-        // Dark Overlay
-        doc.setFillColor(0, 0, 0);
-        doc.rect(0, 0, pageWidth, pageHeight, 'F');
-        // Note: jsPDF doesn't support alpha transparency easily in rects without GState, 
-        // so we might need a workaround or just rely on the image being dark enough.
-        // Actually, let's use a workaround: add a semi-transparent black png or just assume the image is good.
-        // Better: Use GState if available, or just a dark header/footer.
-        // For simplicity in this version, let's keep the header/footer solid and maybe a dark filter on image if possible.
-        // Let's stick to the "Immersive" header/footer for now to ensure readability.
-      }
-    } catch (e) {
-      console.warn("Could not load project image for PDF", e);
-    }
-
-    // Overlay for readability (Simulated with dark rects where text is)
-    // Actually, let's do a full page dark overlay using a massive black rectangle with some transparency if possible,
-    // but standard jsPDF transparency is tricky. Let's stick to a "Dark Mode" PDF.
-
-    // Reset Background to Dark Blue if image fails or for consistency
-    if (!bgImage) {
-      doc.setFillColor(11, 17, 33);
-      doc.rect(0, 0, pageWidth, pageHeight, 'F');
-    }
-
-    // 2. Header
-    doc.setFillColor(11, 17, 33);
-    doc.rect(0, 0, pageWidth, 40, 'F');
-
-    // Logo
-    doc.setTextColor(224, 163, 43); // Gold
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("Konexlab", 20, 20);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("La Maison de Demain", 20, 30);
-
-    // 3. Title & Client Info (White Text)
-    const startY = 60;
-    doc.setTextColor(224, 163, 43); // Gold
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.text(title, 20, startY);
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 200, 200); // Light Grey
-    doc.text(`Préparé pour : ${contact.firstName} ${contact.lastName}`, 20, startY + 10);
-    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, startY + 18);
-
-    // 4. Equipment List (Cards style)
-    doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.text("Votre Matériel Recommandé", 20, startY + 40);
-
-    let yPos = startY + 50;
-    const colWidth = (pageWidth - 50) / 2;
-
-    recProducts.forEach((p, index) => {
-      const xPos = index % 2 === 0 ? 20 : 20 + colWidth + 10;
-      if (index % 2 === 0 && index !== 0) yPos += 35; // New row
-
-      // Card Background (Semi-transparent white)
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(xPos, yPos, colWidth, 30, 2, 2, 'F');
-
-      doc.setFontSize(12);
-      doc.setTextColor(11, 17, 33); // Dark Text on White Card
-      doc.setFont("helvetica", "bold");
-      doc.text(p.title, xPos + 5, yPos + 8);
-
-      doc.setFontSize(9);
-      doc.setTextColor(100, 100, 100);
-      doc.setFont("helvetica", "normal");
-      const splitDesc = doc.splitTextToSize(p.desc, colWidth - 10);
-      doc.text(splitDesc, xPos + 5, yPos + 14);
-    });
-
-    // 5. Scenarios
-    yPos += 50;
-    doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255); // White
-    doc.setFont("helvetica", "bold");
-    doc.text("Vos Scénarios Intelligents", 20, yPos);
-    yPos += 15;
-
-    const scenarios = [
-      "Départ Maison : Alarme ON + Lumières OFF + Chauffage ÉCO.",
-      "Simulation de Présence : Les lumières s'allument aléatoirement.",
-      "Nuit Tranquille : Alarme périmétrique ON + Volets fermés."
-    ];
-
-    scenarios.forEach((s) => {
-      doc.setFillColor(224, 163, 43); // Gold bullet
-      doc.circle(23, yPos - 1, 1, 'F');
-
-      doc.setFontSize(11);
-      doc.setTextColor(220, 220, 220); // Off-white
-      doc.setFont("helvetica", "normal");
-      doc.text(s, 28, yPos);
-      yPos += 10;
-    });
-
-    // 6. Footer
-    doc.setFillColor(11, 17, 33);
-    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text("Konexlab - Solutions Domotiques & Sécurité - www.konexlab.com", pageWidth / 2, pageHeight - 8, { align: 'center' });
-
-    if (returnBlob) {
-      return doc.output('datauristring').split(',')[1]; // Return Base64 only
-    } else {
-      doc.save("Konexlab_Etude_Premium.pdf");
-    }
-  };
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
