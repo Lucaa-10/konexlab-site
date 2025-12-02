@@ -38,7 +38,7 @@ export const CONFIG_DATA: Record<number, ConfigStep> = {
   2: { q: "T'as un extérieur ?", opts: [{ l: "Oui", i: "trees", v: "Oui", img: "./images/garden_terrace_1764673571249.png" }, { l: "Non", i: "x-circle", v: "Non", img: "./images/living_room_no_view_1764673606484.png" }] },
   3: { q: "L'isolation, ça dit quoi ?", opts: [{ l: "Top", i: "check-circle", v: "Bon", img: "./images/insulation_good_1764673621158.png" }, { l: "Moyen", i: "minus-circle", v: "Moyen", img: "./images/insulation_medium_1764673636265.png" }, { l: "Bof", i: "wind", v: "Mauvais", img: "./images/insulation_medium_1764673636265.png" }] },
   4: { q: "Déjà équipé en domotique ?", opts: [{ l: "Oui", i: "cpu", v: "Oui", img: "./images/modern_office_1764673555771.png" }, { l: "Non", i: "power-off", v: "Non", img: "./images/living_room_no_view_1764673606484.png" }] },
-  5: { q: "Ta priorité c'est quoi ?", opts: [{ l: "Sécurité", i: "shield-alert", v: "Secu", img: "./images/modern_house_option_1764673436863.png" }, { l: "Économies", i: "zap", v: "Eco", img: "./images/insulation_good_1764673621158.png" }, { l: "Confort", i: "armchair", v: "Conf", img: "./images/apartment_interior_1764673540632.png" }] }
+  5: { q: "Que doit faire votre maison ?", opts: [{ l: "Sécuriser ma famille", i: "shield-alert", v: "Secu", img: "./images/modern_house_option_1764673436863.png" }, { l: "Réduire mes factures", i: "zap", v: "Eco", img: "./images/insulation_good_1764673621158.png" }, { l: "Gérer mes lumières", i: "lightbulb", v: "Conf", img: "./images/apartment_interior_1764673540632.png" }] }
 };
 
 export const DB_PRODUCTS: Record<ProductKey, ProductDetail> = {
