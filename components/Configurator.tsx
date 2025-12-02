@@ -133,18 +133,30 @@ const StepContent = ({ step, data, onSelect, direction }: { step: number, data: 
             whileHover={{ y: -5, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(opt.v)}
-            className="group relative flex flex-col items-center justify-center gap-6 p-8 rounded-[2rem] bg-[#2C343D]/50 border border-[#E0A32B]/10 hover:bg-[#2C343D] hover:border-[#E0A32B]/40 transition-all duration-300 overflow-hidden"
+            className="group relative flex flex-col items-center justify-center gap-6 p-8 rounded-[2rem] bg-[#2C343D]/50 border border-[#E0A32B]/10 hover:border-[#E0A32B]/40 transition-all duration-300 overflow-hidden min-h-[280px]"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#E0A32B]/0 to-[#E0A32B]/0 group-hover:from-[#E0A32B]/5 group-hover:to-transparent transition-all duration-500"></div>
+            {/* Background Image */}
+            {opt.img && (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={opt.img}
+                  alt={opt.l}
+                  className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1121] via-[#0B1121]/80 to-transparent opacity-90 group-hover:opacity-60 transition-all duration-500" />
+              </div>
+            )}
 
-            <div className="relative z-10 w-20 h-20 rounded-2xl bg-[#2C343D] border border-[#E0A32B]/10 flex items-center justify-center text-[#E0A32B] group-hover:text-[#F2F3F4] group-hover:scale-110 group-hover:border-[#E0A32B]/30 group-hover:shadow-[0_0_30px_-10px_rgba(224,163,43,0.2)] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#E0A32B]/0 to-[#E0A32B]/0 group-hover:from-[#E0A32B]/10 group-hover:to-transparent transition-all duration-500 z-10"></div>
+
+            <div className="relative z-20 w-20 h-20 rounded-2xl bg-[#2C343D]/80 backdrop-blur-sm border border-[#E0A32B]/10 flex items-center justify-center text-[#E0A32B] group-hover:text-[#F2F3F4] group-hover:scale-110 group-hover:border-[#E0A32B]/30 group-hover:shadow-[0_0_30px_-10px_rgba(224,163,43,0.2)] transition-all duration-300">
               <Icon size={32} strokeWidth={1.5} />
             </div>
 
-            <span className="relative z-10 font-display font-bold text-lg text-[#E0A32B] group-hover:text-white transition-colors">{opt.l}</span>
+            <span className="relative z-20 font-display font-bold text-lg text-[#E0A32B] group-hover:text-white transition-colors drop-shadow-lg">{opt.l}</span>
 
             {/* Selection Indicator */}
-            <div className="absolute top-4 right-4 w-6 h-6 rounded-full border-2 border-[#E0A32B]/10 flex items-center justify-center group-hover:border-[#E0A32B] transition-colors">
+            <div className="absolute top-4 right-4 w-6 h-6 rounded-full border-2 border-[#E0A32B]/30 flex items-center justify-center group-hover:border-[#E0A32B] transition-colors z-20">
               <div className="w-2.5 h-2.5 rounded-full bg-[#E0A32B] opacity-0 group-hover:opacity-100 transition-opacity scale-0 group-hover:scale-100 duration-300"></div>
             </div>
           </motion.button>
