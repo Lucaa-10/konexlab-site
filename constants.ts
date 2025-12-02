@@ -42,14 +42,14 @@ export const CONFIG_DATA: Record<number, ConfigStep> = {
 };
 
 export const DB_PRODUCTS: Record<ProductKey, ProductDetail> = {
-  camera: { title: "Caméra Hub G3", icon: "camera", desc: "Centrale & Vidéo" },
-  motion: { title: "Capteur Mouvement", icon: "radio", desc: "Sécurité & Lumière" },
-  door: { title: "Capteur Ouverture", icon: "door-open", desc: "Portes & Fenêtres" },
-  siren: { title: "Sirène Intérieure", icon: "bell-ring", desc: "Alarme 105dB" },
+  camera: { title: "Caméra Hub G3", icon: "camera", desc: "Centrale & Vidéo", image: "./images/camera_3d.png" },
+  motion: { title: "Capteur Mouvement", icon: "radio", desc: "Sécurité & Lumière", image: "./images/motion_sensor.png" },
+  door: { title: "Capteur Ouverture", icon: "door-open", desc: "Portes & Fenêtres", image: "./images/door_sensor.png" },
+  siren: { title: "Sirène Intérieure", icon: "bell-ring", desc: "Alarme 105dB", image: "./images/button.png" },
   smoke: { title: "Détecteur Fumée", icon: "flame", desc: "Sécurité Incendie" },
   thermo: { title: "Tête Thermostatique", icon: "thermometer", desc: "Chauffage auto" },
   temp: { title: "Capteur Température", icon: "droplets", desc: "Suivi climat" },
   plug: { title: "Prise Connectée", icon: "plug", desc: "Contrôle appareils" },
   switch: { title: "Interrupteur Sans Fil", icon: "toggle-left", desc: "Commande lumière" },
-  button: { title: "Bouton", icon: "shield", desc: "Contrôle alarme" }
+  button: { title: "Bouton", icon: "shield", desc: "Contrôle alarme", image: "./images/button.png" }
 };
