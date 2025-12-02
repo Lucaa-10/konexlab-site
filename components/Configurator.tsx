@@ -644,7 +644,13 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
                   transition={{ delay: 0.3 + (i * 0.1) }}
                   className="flex flex-col items-center text-center p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors"
                 >
-                  <div className="p-3 bg-white/10 rounded-xl text-[#E0A32B] mb-3"><Icon size={24} /></div>
+                  <div className="mb-4 flex items-center justify-center h-20 w-full">
+                    {p.image ? (
+                      <img src={p.image} alt={p.title} className="h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]" />
+                    ) : (
+                      <div className="p-3 bg-white/10 rounded-xl text-[#E0A32B]"><Icon size={24} /></div>
+                    )}
+                  </div>
                   <p className="text-sm font-bold text-white mb-1">{p.title}</p>
                   <p className="text-xs text-slate-400 leading-tight">{p.desc}</p>
                 </motion.div>
