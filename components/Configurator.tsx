@@ -236,35 +236,31 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     recScenarios.push({ t: "Lumière Auto", i: "lightbulb" }, { t: "Tout éteindre", i: "power" });
   }
 
-  // --- Supabase Integration ---
+  // --- Supabase Integration (Direct Edge Function) ---
   React.useEffect(() => {
     const saveLead = async () => {
-      if (!supabase) return; // Safety check: Exit if Supabase is not configured
+      if (!supabase) return;
 
       try {
-        // Only save if we haven't saved this session yet (simple check)
         const sessionKey = `konexlab_lead_${Date.now()}`;
         if (sessionStorage.getItem('lead_saved')) return;
 
-        const { error } = await supabase
-          .from('leads')
-          .insert([
-            {
-              configuration: answers,
-              pack_title: title,
-              status: 'new',
-              first_name: contact.firstName,
-              last_name: contact.lastName,
-              email: contact.email,
-              phone: contact.phone,
-              created_at: new Date().toISOString()
-            }
-          ]);
+        // Call Edge Function directly (Bypassing Database Table)
+        const { data, error } = await supabase.functions.invoke('odoo-sync', {
+          body: {
+            configuration: answers,
+            pack_title: title,
+            first_name: contact.firstName,
+            last_name: contact.lastName,
+            email: contact.email,
+            phone: contact.phone
+          }
+        });
 
         if (error) {
-          console.error('Supabase error:', error);
+          console.error('Supabase Function error:', error);
         } else {
-          console.log('Lead saved to Supabase');
+          console.log('Lead sent to Odoo via Edge Function', data);
           sessionStorage.setItem('lead_saved', 'true');
         }
       } catch (err) {
