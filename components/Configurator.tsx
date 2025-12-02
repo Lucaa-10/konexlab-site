@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Home, Building2, Store, Trees, XCircle, CheckCircle, MinusCircle, Wind, Cpu, PowerOff, ShieldAlert, Zap, Armchair, Check, Shield, Video, Sun, Thermometer, Lightbulb, Power, Camera, Radio, DoorOpen, BellRing, Flame, Droplets, Plug, ToggleLeft } from 'lucide-react';
+import { Home, Building2, Store, Trees, XCircle, CheckCircle, MinusCircle, Wind, Cpu, PowerOff, ShieldAlert, Zap, Armchair, Check, Shield, Video, Sun, Thermometer, Lightbulb, Power, Camera, Radio, DoorOpen, BellRing, Flame, Droplets, Plug, ToggleLeft, Download } from 'lucide-react';
 import { CONFIG_DATA, DB_PRODUCTS } from '../constants';
 import { ProductDetail, ConfigStep, ConfigOption } from '../types';
 import { supabase } from '../lib/supabase';
+import { jsPDF } from 'jspdf';
 
 // --- Icons Mapping ---
 const iconMap: Record<string, React.ElementType> = {
@@ -271,7 +272,72 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     saveLead();
   }, [answers, title, contact]);
 
+  // --- PDF Generation ---
+  const downloadPDF = () => {
+    const doc = new jsPDF();
 
+    // Header
+    doc.setFillColor(11, 17, 33); // Dark Blue
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.text("Konexlab", 20, 20);
+    doc.setFontSize(12);
+    doc.text("La Maison de Demain", 20, 30);
+
+    // Client Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text(`Étude personnalisée pour : ${contact.firstName} ${contact.lastName}`, 20, 60);
+    doc.setFontSize(10);
+    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, 66);
+
+    // Title
+    doc.setFontSize(18);
+    doc.setTextColor(224, 163, 43); // Gold
+    doc.text(title, 20, 80);
+
+    // Equipment
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text("Matériel Recommandé :", 20, 100);
+
+    let yPos = 110;
+    recProducts.forEach((p) => {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`• ${p.title}`, 25, yPos);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(p.desc, 30, yPos + 5);
+      yPos += 15;
+    });
+
+    // Scenarios
+    yPos += 10;
+    doc.setFontSize(14);
+    doc.text("Vos Scénarios Intelligents :", 20, yPos);
+    yPos += 10;
+
+    const scenarios = [
+      "Départ Maison : Alarme ON + Lumières OFF + Chauffage ÉCO.",
+      "Simulation de Présence : Les lumières s'allument aléatoirement quand je suis en vacances.",
+      "Nuit Tranquille : Alarme périmétrique ON + Volets fermés."
+    ];
+
+    scenarios.forEach((s) => {
+      doc.setFontSize(11);
+      doc.text(`- ${s}`, 25, yPos);
+      yPos += 8;
+    });
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Un expert Konexlab va vous recontacter sous 24h pour affiner cette étude.", 20, 280);
+
+    doc.save("Konexlab_Etude.pdf");
+  };
 
   return (
     <motion.div
@@ -328,6 +394,13 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
 
       <div className="flex flex-col sm:flex-row gap-4">
         <button
+          onClick={downloadPDF}
+          className="flex-1 py-4 rounded-xl bg-[#E0A32B] text-[#0B1121] font-bold text-sm shadow-xl shadow-[#E0A32B]/20 hover:bg-[#F2B749] transition-colors flex items-center justify-center gap-2"
+        >
+          <Download size={20} />
+          Télécharger mon Étude (PDF)
+        </button>
+        <button
           onClick={onReset}
           className="flex-1 py-4 rounded-xl bg-slate-900 text-white font-bold text-sm shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-colors"
         >
@@ -337,4 +410,3 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     </motion.div>
   );
 };
-// Force Vercel Deployment
