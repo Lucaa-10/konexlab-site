@@ -295,82 +295,126 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
         console.log("Image loaded");
         doc.addImage(imgElement, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
 
-        // Dark Overlay
+        // Dark Overlay with Transparency
+        doc.saveGraphicsState();
+        // @ts-ignore
+        doc.setGState(new doc.GState({ opacity: 0.85 }));
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
+        doc.restoreGraphicsState();
       }
     } catch (e) {
       console.warn("Could not load project image for PDF", e);
     }
 
-    // Reset Background to Dark Blue if image fails or for consistency
+    // Fallback Background if no image
     if (!bgImage) {
       doc.setFillColor(11, 17, 33);
       doc.rect(0, 0, pageWidth, pageHeight, 'F');
     }
 
     // 2. Header
-    doc.setFillColor(11, 17, 33);
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    // Gradient-like effect for header? No, keep it clean.
+    // Let's add a gold line at the top
+    doc.setDrawColor(224, 163, 43);
+    doc.setLineWidth(2);
+    doc.line(0, 0, pageWidth, 0);
 
-    // Logo
+    // Logo Area
     doc.setTextColor(224, 163, 43); // Gold
-    doc.setFontSize(22);
+    doc.setFontSize(26);
     doc.setFont("helvetica", "bold");
-    doc.text("Konexlab", 20, 20);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("La Maison de Demain", 20, 30);
+    doc.text("Konexlab", 20, 25);
 
-    // 3. Title & Client Info (White Text)
+    doc.setTextColor(200, 200, 200);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("LA MAISON DE DEMAIN", 20, 32);
+
+    // 3. Title & Client Info
     const startY = 60;
-    doc.setTextColor(224, 163, 43); // Gold
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.text(title, 20, startY);
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 200, 200); // Light Grey
-    doc.text(`Préparé pour : ${contact.firstName} ${contact.lastName}`, 20, startY + 10);
-    doc.text(`Date : ${new Date().toLocaleDateString()}`, 20, startY + 18);
-
-    // 4. Equipment List (Cards style)
-    doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
     doc.setFont("helvetica", "bold");
-    doc.text("Votre Matériel Recommandé", 20, startY + 40);
+    // Split title if too long
+    const splitTitle = doc.splitTextToSize(title, pageWidth - 40);
+    doc.text(splitTitle, 20, startY);
 
-    let yPos = startY + 50;
+    const titleHeight = splitTitle.length * 12;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(180, 180, 180); // Light Grey
+    doc.text(`PRÉPARÉ POUR`, 20, startY + titleHeight + 10);
+
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`${contact.firstName} ${contact.lastName}`, 20, startY + titleHeight + 18);
+
+    doc.setFontSize(11);
+    doc.setTextColor(180, 180, 180);
+    doc.text(new Date().toLocaleDateString(), pageWidth - 40, startY + titleHeight + 18, { align: 'right' });
+
+    // 4. Equipment List (Glassmorphism Cards)
+    let yPos = startY + titleHeight + 40;
+
+    doc.setFontSize(14);
+    doc.setTextColor(224, 163, 43); // Gold
+    doc.setFont("helvetica", "bold");
+    doc.text("MATÉRIEL RECOMMANDÉ", 20, yPos);
+
+    yPos += 10;
     const colWidth = (pageWidth - 50) / 2;
+    const cardHeight = 35;
 
     recProducts.forEach((p, index) => {
       const xPos = index % 2 === 0 ? 20 : 20 + colWidth + 10;
-      if (index % 2 === 0 && index !== 0) yPos += 35; // New row
+      if (index % 2 === 0 && index !== 0) yPos += (cardHeight + 5); // New row
 
-      // Card Background (Semi-transparent white)
+      // Glass Card Background
+      doc.saveGraphicsState();
+      // @ts-ignore
+      doc.setGState(new doc.GState({ opacity: 0.1 })); // Very transparent white
       doc.setFillColor(255, 255, 255);
-      doc.roundedRect(xPos, yPos, colWidth, 30, 2, 2, 'F');
+      doc.roundedRect(xPos, yPos, colWidth, cardHeight, 3, 3, 'F');
+      doc.restoreGraphicsState();
 
+      // Card Border
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.1);
+      doc.roundedRect(xPos, yPos, colWidth, cardHeight, 3, 3, 'S');
+
+      // Content
       doc.setFontSize(12);
-      doc.setTextColor(11, 17, 33); // Dark Text on White Card
+      doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.text(p.title, xPos + 5, yPos + 8);
+      doc.text(p.title, xPos + 5, yPos + 10);
 
       doc.setFontSize(9);
-      doc.setTextColor(100, 100, 100);
+      doc.setTextColor(200, 200, 200);
       doc.setFont("helvetica", "normal");
       const splitDesc = doc.splitTextToSize(p.desc, colWidth - 10);
-      doc.text(splitDesc, xPos + 5, yPos + 14);
+      doc.text(splitDesc, xPos + 5, yPos + 18);
     });
 
     // 5. Scenarios
-    yPos += 50;
-    doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255); // White
+    yPos += (cardHeight + 25);
+
+    // Check for page break
+    if (yPos > pageHeight - 40) {
+      doc.addPage();
+      yPos = 40;
+      // Re-apply background if needed, but for now let's keep it simple (single page mostly)
+      // If multi-page, we'd need to re-draw bg. 
+      // Let's assume single page for this MVP or just dark bg.
+      doc.setFillColor(11, 17, 33);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(224, 163, 43);
     doc.setFont("helvetica", "bold");
-    doc.text("Vos Scénarios Intelligents", 20, yPos);
+    doc.text("VOS SCÉNARIOS INTELLIGENTS", 20, yPos);
     yPos += 15;
 
     const scenarios = [
@@ -380,22 +424,26 @@ const ConfigResult = ({ answers, contact, onReset }: { answers: Record<number, s
     ];
 
     scenarios.forEach((s) => {
-      doc.setFillColor(224, 163, 43); // Gold bullet
-      doc.circle(23, yPos - 1, 1, 'F');
+      // Bullet
+      doc.setFillColor(224, 163, 43);
+      doc.circle(23, yPos - 1.5, 1.5, 'F');
 
-      doc.setFontSize(11);
-      doc.setTextColor(220, 220, 220); // Off-white
+      doc.setFontSize(10);
+      doc.setTextColor(230, 230, 230);
       doc.setFont("helvetica", "normal");
       doc.text(s, 28, yPos);
       yPos += 10;
     });
 
     // 6. Footer
-    doc.setFillColor(11, 17, 33);
-    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text("Konexlab - Solutions Domotiques & Sécurité - www.konexlab.com", pageWidth / 2, pageHeight - 8, { align: 'center' });
+    const footerY = pageHeight - 15;
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.1);
+    doc.line(20, footerY - 5, pageWidth - 20, footerY - 5);
+
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(8);
+    doc.text("Konexlab - Solutions Domotiques & Sécurité - www.konexlab.com", pageWidth / 2, footerY + 5, { align: 'center' });
 
     if (returnBlob) {
       return doc.output('datauristring').split(',')[1]; // Return Base64 only
